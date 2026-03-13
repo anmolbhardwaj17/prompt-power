@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Power</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-spacer"></div>
+      <div class="logo">
+        <span class="logo-icon">
+          <img id="logoLight" src="../icons/logo-light.svg" alt="Prompt Power" class="logo-img">
+          <img id="logoDark" src="../icons/logo-dark.svg" alt="Prompt Power" class="logo-img" style="display:none">
+        </span>
+      </div>
+      <div class="header-actions">
+        <button id="themeBtn" class="icon-btn" title="Toggle theme">
+          <svg id="themeIconDark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg id="themeIconLight" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero: rotating comparison -->
+    <section class="hero" id="heroSection">
+      <div class="hero-comparison" id="heroComparison">
+        <span class="hero-icon" id="heroIcon"></span>
+        <span class="hero-text" id="heroText">Start chatting with AI to track energy</span>
+      </div>
+      <div class="hero-energy" id="heroEnergy"></div>
+    </section>
+
+    <!-- Stats row -->
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalPrompts">0</div>
+        <div class="stat-label">Prompts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalTokens">0</div>
+        <div class="stat-label">Tokens</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalWater">0 ml</div>
+        <div class="stat-label">Water Used</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalEnergy">0 Wh</div>
+        <div class="stat-label">Energy</div>
+      </div>
+    </section>
+
+    <!-- Platform breakdown -->
+    <section class="platforms" id="platformsSection">
+      <h2 class="section-title">By Platform</h2>
+      <div class="platform-bars" id="platformBars"></div>
+    </section>
+
+    <!-- Comparisons -->
+    <section class="comparisons" id="comparisonsSection">
+      <h2 class="section-title">That's equivalent to</h2>
+      <div class="comparison-list" id="comparisonList"></div>
+    </section>
+
+    <!-- History -->
+    <section class="history-section">
+      <h2 class="section-title">Recent Activity</h2>
+      <div class="history-list" id="historyList">
+        <div class="empty-state">No prompts tracked yet.<br>Visit Claude, ChatGPT, Gemini, or Perplexity to start.</div>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section class="why-section">
+      <h2 class="section-title">Why This Matters</h2>
+      <div class="why-card">
+        <p>Every AI prompt consumes real energy and water. A single ChatGPT query uses <strong>10x more energy</strong> than a Google search. Image generation uses <strong>60x more</strong>.</p>
+        <p>Globally, AI data centers are projected to consume as much electricity as <strong>entire countries</strong> by 2027. They already use billions of liters of fresh water for cooling.</p>
+        <p>This isn't about stopping — it's about <strong>being aware</strong>. Use AI intentionally. Combine questions. Skip regenerations when the first answer works. Small choices, collectively, shape the footprint.</p>
+      </div>
+    </section>
+
+    <!-- Smiley -->
+    <div class="smiley">
+      <img src="../icons/smiley.svg" alt="" class="smiley-img">
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span>Estimates based on published <a href="https://arxiv.org/abs/2311.16863" id="researchLink" target="_blank">research data</a></span>
+      <button id="clearBtn" class="icon-btn clear-btn" title="Clear all data">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </footer>
+  </div>
+
+  <script src="../lib/comparisons.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

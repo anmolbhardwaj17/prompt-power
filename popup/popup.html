@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompt Power</title>
   <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
@@ -28,31 +31,41 @@
     <!-- Hero: rotating comparison -->
     <section class="hero" id="heroSection">
       <div class="hero-comparison" id="heroComparison">
-        <span class="hero-icon" id="heroIcon"></span>
-        <span class="hero-text" id="heroText">Start chatting with AI to track energy</span>
+        <div class="hero-icon-circle">
+          <span class="hero-icon" id="heroIcon"></span>
+        </div>
+        <div class="hero-content">
+          <span class="hero-text" id="heroText">Start chatting with AI to track energy</span>
+          <div class="hero-energy" id="heroEnergy"></div>
+        </div>
       </div>
-      <div class="hero-energy" id="heroEnergy"></div>
     </section>
 
     <!-- Stats row -->
-    <section class="stats">
-      <div class="stat-card">
+    <div class="stats-row-1">
+      <div class="stat-card-primary">
         <div class="stat-value" id="totalPrompts">0</div>
         <div class="stat-label">Prompts</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card-primary">
         <div class="stat-value" id="totalTokens">0</div>
         <div class="stat-label">Tokens</div>
+      </div>
+      <div class="stat-card-primary">
+        <div class="stat-value" id="totalEnergy">0 Wh</div>
+        <div class="stat-label">Wh Energy</div>
+      </div>
+    </div>
+    <div class="stats-row-2">
+      <div class="stat-card">
+        <div class="stat-value" id="totalCO2">0g</div>
+        <div class="stat-label">CO₂ Emissions</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="totalWater">0 ml</div>
         <div class="stat-label">Water Used</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value" id="totalEnergy">0 Wh</div>
-        <div class="stat-label">Energy</div>
-      </div>
-    </section>
+    </div>
 
     <!-- Platform breakdown -->
     <section class="platforms" id="platformsSection">
@@ -64,6 +77,16 @@
     <section class="comparisons" id="comparisonsSection">
       <h2 class="section-title">That's equivalent to</h2>
       <div class="comparison-list" id="comparisonList"></div>
+    </section>
+
+    <!-- Usage Chart -->
+    <section class="chart-section" id="chartSection" style="display:none">
+      <h2 class="section-title">Usage Over Time</h2>
+      <div class="chart-card">
+        <div class="chart-legend" id="chartLegend"></div>
+        <div class="chart-container"></div>
+        <div class="chart-dates" id="chartDates"></div>
+      </div>
     </section>
 
     <!-- History -->
@@ -79,8 +102,8 @@
       <h2 class="section-title">Why This Matters</h2>
       <div class="why-card">
         <p>Every AI prompt consumes real energy and water. A single ChatGPT query uses <strong>10x more energy</strong> than a Google search. Image generation uses <strong>60x more</strong>.</p>
-        <p>Globally, AI data centers are projected to consume as much electricity as <strong>entire countries</strong> by 2027. They already use billions of liters of fresh water for cooling.</p>
-        <p>This isn't about stopping — it's about <strong>being aware</strong>. Use AI intentionally. Combine questions. Skip regenerations when the first answer works. Small choices, collectively, shape the footprint.</p>
+        <p>Globally, AI data centers are projected to consume as much electricity as <span class="semibold">entire countries</span> by <span class="semibold">2027</span>. They already use billions of liters of fresh water for cooling.</p>
+        <p>This isn't about stopping — it's about <span class="semibold">being aware</span>. Use AI intentionally. Combine questions. Skip regenerations when the first answer works. Small choices, collectively, shape the footprint.</p>
       </div>
     </section>
 
@@ -91,10 +114,15 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <span>Estimates based on published <a href="https://arxiv.org/abs/2311.16863" id="researchLink" target="_blank">research data</a></span>
-      <button id="clearBtn" class="icon-btn clear-btn" title="Clear all data">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </button>
+      <div class="footer-row">
+        <span>Estimates based on published <a href="https://arxiv.org/abs/2311.16863" id="researchLink" target="_blank">research data</a></span>
+        <button id="clearBtn" class="icon-btn clear-btn" title="Clear all data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+      <div class="footer-site">
+        <a href="https://anmolbhardwaj.com" target="_blank">anmolbhardwaj.com</a>
+      </div>
     </footer>
   </div>
 

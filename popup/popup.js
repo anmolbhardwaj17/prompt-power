@@ -62,6 +62,7 @@ function loadData() {
     renderHero(totals);
     renderPlatforms(totals);
     renderComparisons(totals);
+    renderChart(history);
     renderHistory(history);
   });
 }
@@ -69,8 +70,9 @@ function loadData() {
 function renderStats(totals) {
   document.getElementById("totalPrompts").textContent = formatNumber(totals.totalPrompts);
   document.getElementById("totalTokens").textContent = formatNumber(totals.totalTokens);
-  document.getElementById("totalWater").textContent = formatWater(totals.totalEnergyWh);
   document.getElementById("totalEnergy").textContent = formatEnergy(totals.totalEnergyWh);
+  document.getElementById("totalCO2").textContent = formatCO2(totals.totalEnergyWh);
+  document.getElementById("totalWater").textContent = formatWater(totals.totalEnergyWh);
 }
 
 function renderHero(totals) {
@@ -90,7 +92,7 @@ function renderHero(totals) {
     heroComparisons = [PromptPowerComparisons.getBestComparison(totals.totalEnergyWh)];
   }
 
-  heroEnergy.textContent = `${formatEnergy(totals.totalEnergyWh)} total across ${totals.totalPrompts} prompts`;
+  heroEnergy.textContent = `Based on ${formatEnergy(totals.totalEnergyWh)} total energy used`;
 
   heroIndex = 0;
   showHeroComparison(heroComparisons[0]);
@@ -106,7 +108,7 @@ function renderHero(totals) {
 
 function showHeroComparison(comp) {
   document.getElementById("heroIcon").innerHTML = comp.icon;
-  document.getElementById("heroText").innerHTML = formatComparisonBold(comp.text);
+  document.getElementById("heroText").textContent = comp.text;
 }
 
 function rotateHero(comp) {
@@ -122,7 +124,7 @@ function rotateHero(comp) {
 
 function formatComparisonBold(text) {
   // Match time with two parts (e.g. "2 min 42 sec") or single value + unit
-  const match = text.match(/^([\d,.]+k?\s*(?:milli-)?(?:sec|min|hr|days|months|searches|miles|loads|liters|uWh|mWh|Wh|kWh)(?:\s+\d+\s*(?:sec|min|hr|days))?)\s*(.*)/);
+  const match = text.match(/^([\d,.]+k?\s*(?:milli-)?(?:s|min|hr|d|mo|searches|miles|loads|liters|km|breaths|uWh|mWh|Wh|kWh)(?:\s+\d+\s*(?:s|min|hr|d|mo))?)\s*(.*)/);
   if (match) {
     const value = match[1];
     const label = match[2];
@@ -186,6 +188,123 @@ function renderComparisons(totals) {
 
 }
 
+function renderChart(history) {
+  const section = document.getElementById("chartSection");
+  const chartContainer = document.querySelector(".chart-container");
+  const legendEl = document.getElementById("chartLegend");
+  const datesEl = document.getElementById("chartDates");
+
+  if (!history || history.length < 2) {
+    section.style.display = "none";
+    return;
+  }
+
+  // Aggregate energy by day per platform
+  const dayMap = {};
+  const platformSet = new Set();
+  for (const entry of history) {
+    if (!entry || !entry.timestamp || !entry.platform) continue;
+    const date = new Date(entry.timestamp);
+    const key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+    if (!dayMap[key]) dayMap[key] = {};
+    if (!dayMap[key][entry.platform]) dayMap[key][entry.platform] = 0;
+    dayMap[key][entry.platform] += entry.energyWh || 0;
+    platformSet.add(entry.platform);
+  }
+
+  const days = Object.keys(dayMap).sort();
+  if (days.length < 2) {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+
+  const platforms = Array.from(platformSet);
+  const fallbackColors = {
+    claude: "#D97757",
+    chatgpt: "#00a852",
+    gemini: "#3B82F6",
+    perplexity: "#22b8cd"
+  };
+
+  function getColor(platform) {
+    try {
+      const style = getComputedStyle(document.documentElement);
+      const val = style.getPropertyValue("--" + platform + "-color").trim();
+      if (val) return val;
+    } catch (e) {}
+    return fallbackColors[platform] || "#888";
+  }
+
+  // Build legend with platform icons
+  legendEl.innerHTML = "";
+  for (const p of platforms) {
+    var c = getColor(p);
+    var icon = getPlatformLogo(p, 12);
+    legendEl.innerHTML += '<div class="chart-legend-item"><span class="chart-legend-icon">' + icon + '</span><span class="chart-legend-label">' + p.charAt(0).toUpperCase() + p.slice(1) + "</span></div>";
+  }
+
+  // Build cumulative data per platform per day
+  var cumulativeData = {};
+  for (const p of platforms) {
+    cumulativeData[p] = [];
+    var cum = 0;
+    for (const day of days) {
+      cum += (dayMap[day][p] || 0);
+      cumulativeData[p].push(cum);
+    }
+  }
+
+  // Find max value for scaling
+  var maxVal = 0;
+  for (const p of platforms) {
+    var last = cumulativeData[p][cumulativeData[p].length - 1];
+    if (last > maxVal) maxVal = last;
+  }
+  if (maxVal === 0) maxVal = 1;
+
+  var W = 328;
+  var H = 140;
+  var pad = 4;
+
+  var svg = '<svg viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" xmlns="http://www.w3.org/2000/svg">';
+
+  // Draw area + line for each platform
+  for (const p of platforms) {
+    var col = getColor(p);
+    var vals = cumulativeData[p];
+    var pts = [];
+    for (var vi = 0; vi < vals.length; vi++) {
+      var px = pad + (vi / (days.length - 1)) * (W - pad * 2);
+      var py = H - pad - ((vals[vi] / maxVal) * (H - pad * 2));
+      pts.push(px.toFixed(1) + " " + py.toFixed(1));
+    }
+
+    var pathD = "M" + pts.join(" L");
+    var lastPt = pts[pts.length - 1].split(" ");
+    var firstPt = pts[0].split(" ");
+
+    // Area fill
+    svg += '<path d="' + pathD + " L" + lastPt[0] + " " + H + " L" + firstPt[0] + " " + H + 'Z" fill="' + col + '" fill-opacity="0.06"/>';
+    // Line
+    svg += '<path d="' + pathD + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    // End dot
+    svg += '<circle cx="' + lastPt[0] + '" cy="' + lastPt[1] + '" r="3.5" fill="' + col + '"/>';
+  }
+
+  svg += "</svg>";
+  chartContainer.innerHTML = svg;
+
+  // Date labels
+  datesEl.innerHTML = "";
+  var showDays = days.length <= 4 ? days : [days[0], days[Math.floor(days.length / 3)], days[Math.floor(days.length * 2 / 3)], days[days.length - 1]];
+  for (var di = 0; di < showDays.length; di++) {
+    var dd = new Date(showDays[di] + "T00:00:00");
+    datesEl.innerHTML += '<span class="chart-date">' + dd.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + "</span>";
+  }
+}
+
 function renderHistory(history) {
   const container = document.getElementById("historyList");
 
@@ -197,7 +316,13 @@ function renderHistory(history) {
   container.innerHTML = "";
   const shown = history.slice(0, 50);
 
+  if (shown.length === 0) {
+    container.innerHTML = '<div class="empty-state">No prompts tracked yet.<br>Visit Claude, ChatGPT, Gemini, or Perplexity to start.</div>';
+    return;
+  }
+
   for (const entry of shown) {
+    if (!entry || !entry.platform) continue;
     const item = document.createElement("div");
     item.className = "history-item";
     const typeBadge = entry.type === "image"
@@ -206,12 +331,12 @@ function renderHistory(history) {
     item.innerHTML = `
       <span class="history-platform ${entry.platform}">${getPlatformLogo(entry.platform, 14)}</span>
       <div class="history-details">
-        <div class="history-preview">${escapeHtml(entry.promptPreview)}</div>
+        <div class="history-preview">${escapeHtml(entry.promptPreview || "Untitled prompt")}</div>
         <div class="history-meta">
           <span>${formatNumber(entry.inputTokens || 0)} in / ${formatNumber(entry.outputTokens || 0)} out</span>
           ${typeBadge}
-          <span>${formatEnergy(entry.energyWh)}</span>
-          <span>${formatTime(entry.timestamp)}</span>
+          <span>${formatEnergy(entry.energyWh || 0)}</span>
+          <span>${formatTime(entry.timestamp || Date.now())}</span>
         </div>
       </div>
     `;
@@ -278,6 +403,15 @@ function formatWater(wh) {
   if (ml < 1) return `${ml.toFixed(2)} ml`;
   if (ml < 1000) return `${ml.toFixed(1)} ml`;
   return `${(ml / 1000).toFixed(2)} L`;
+}
+
+function formatCO2(wh) {
+  // ~0.478g CO₂ per Wh (US grid average based on EPA eGRID data)
+  const grams = (wh || 0) * 0.478;
+  if (grams === 0) return "0g";
+  if (grams < 1) return `${grams.toFixed(2)}g`;
+  if (grams < 1000) return `${grams.toFixed(1)}g`;
+  return `${(grams / 1000).toFixed(2)}kg`;
 }
 
 function formatEnergy(wh) {
